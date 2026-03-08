@@ -1,0 +1,62 @@
+### Pruebas de Sistema RAG
+
+#### Workflow de Ingesta
+POST http://localhost:5678/webhook/ingesta?filename=documento1.pdf
+Content-Type: application/pdf
+
+< ./documento.pdf
+
+###
+
+#### Workflow de Consulta
+POST http://localhost:5678/webhook/consulta
+Content-Type: application/json
+
+{
+  "pregunta": "¿De qué trata este documento?"
+}
+
+###
+
+### Pruebas de Chatbot Multiherramienta
+
+#### Consulta de Clima
+POST http://localhost:5678/webhook/chatbot
+Content-Type: application/json
+
+{
+  "mensaje": "¿Qué tiempo hace en Madrid?",
+  "query": "Madrid"
+}
+
+###
+
+#### Consulta de País
+POST http://localhost:5678/webhook/chatbot
+Content-Type: application/json
+
+{
+  "mensaje": "Dime información sobre España",
+  "query": "Spain"
+}
+
+###
+
+#### Consulta de Wikipedia
+POST http://localhost:5678/webhook/chatbot
+Content-Type: application/json
+
+{
+  "mensaje": "¿Quién fue Cervantes?",
+  "query": "Miguel de Cervantes"
+}
+
+###
+
+#### Pedir un Chiste
+POST http://localhost:5678/webhook/chatbot
+Content-Type: application/json
+
+{
+  "mensaje": "Cuéntame un chiste de programadores"
+}
