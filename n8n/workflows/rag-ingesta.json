@@ -1,0 +1,169 @@
+{
+  "name": "RAG - Ingesta de Documentos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingesta",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "5b8f1d3c-1234-4567-890a-bcdef1234567",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "extractText",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
+      "name": "Extract Text",
+      "type": "n8n-nodes-base.binaryFile",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "chunkSize": 500,
+          "chunkOverlap": 50
+        }
+      },
+      "id": "c1d2e3f4-5678-90ab-cdef-1234567890ab",
+      "name": "Code (Chunking)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "noteInFlow": true,
+      "notes": "Simulated chunking logic for demo"
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "prompt": "={{$node[\"Code (Chunking)\"].json[\"text\"]}}"
+      },
+      "id": "e1f2a3b4-c5d6-7890-abcd-1234567890ab",
+      "name": "Ollama Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 300],
+      "credentials": {
+        "httpNoAuth": {
+          "id": "ollama-no-auth",
+          "name": "Ollama Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "collection": "documentos",
+        "valuesToSend": {
+          "values": [
+            {
+              "name": "vector",
+              "value": "={{$node[\"Ollama Embeddings\"].json[\"embedding\"]}}"
+            },
+            {
+              "name": "payload",
+              "value": "={{$node[\"Code (Chunking)\"].json}}"
+            }
+          ]
+        }
+      },
+      "id": "f1a2b3c4-d5e6-7890-abcd-1234567890ab",
+      "name": "Qdrant Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "documentos",
+        "columns": "nombre, num_chunks",
+        "values": {
+          "values": [
+            {
+              "column": "nombre",
+              "value": "={{$node[\"Webhook\"].json[\"query\"][\"filename\"]}}"
+            },
+            {
+              "column": "num_chunks",
+              "value": "={{$node[\"Code (Chunking)\"].json[\"chunks\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "b1c2d3e4-f5a6-7890-abcd-1234567890ab",
+      "name": "PostgreSQL Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Code (Chunking)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (Chunking)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Upsert": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
