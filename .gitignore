@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+*.local
+
+# n8n
+.n8n/
+nodes/
+packages/
+
+# Docker volumes (if present locally)
+postgres_data/
+qdrant_data/
+ollama_data/
+n8n_data/
