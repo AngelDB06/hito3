@@ -1,6 +1,6 @@
-# Guía de Demostración - HITO 3
+# Guía de Funcionamiento - HITO 3
 
-Esta guía detalla los pasos seguidos para la demostración técnica del proyecto.
+Esta guía detalla los pasos para verificar el funcionamiento técnico del proyecto.
 
 ## 1. Proyecto A: Sistema RAG
 - **Paso 1**: Subida de un PDF/TXT mediante el webhook de ingesta.

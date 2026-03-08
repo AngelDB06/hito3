@@ -24,9 +24,6 @@
 - **Desafío**: Errores de Certificado TLS al descargar modelos de Ollama en redes restrictivas.
 - **Solución**: Documentación de alternativas (hotspot móvil/pull local) para asegurar que el evaluador pueda ejecutar el sistema sin bloqueos de red.
 
-## 🎥 Vídeo Demostración
-[ENLACE AQUÍ - Inserta tu link de YouTube]
-
 ## 🚀 Instrucciones para Ejecutar
 1. Clonar el repositorio y acceder a la carpeta `docker/`.
 2. Crear archivo `.env` (copiar de `.env.example`).
@@ -36,6 +33,5 @@
 6. Usar `tests/pruebas.http` para validar las funciones.
 
 ---
-**Participantes**:
+**Participante**:
 - AngelDB06 (Ángel)
-- AI-Assistant (Co-autor)
