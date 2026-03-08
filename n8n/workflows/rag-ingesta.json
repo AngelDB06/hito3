@@ -29,18 +29,13 @@
     },
     {
       "parameters": {
-        "options": {
-          "chunkSize": 500,
-          "chunkOverlap": 50
-        }
+        "jsCode": "const text = items[0].json.text;\nconst words = text.split(/\\s+/);\nconst chunkSize = 500;\nconst overlap = 50;\nconst chunks = [];\n\nfor (let i = 0; i < words.length; i += (chunkSize - overlap)) {\n    const chunk = words.slice(i, i + chunkSize).join(' ');\n    chunks.push({ json: { text: chunk, chunk_index: chunks.length, filename: items[0].json.filename } });\n}\n\nreturn chunks;"
       },
       "id": "c1d2e3f4-5678-90ab-cdef-1234567890ab",
       "name": "Code (Chunking)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [650, 300],
-      "noteInFlow": true,
-      "notes": "Simulated chunking logic for demo"
+      "position": [650, 300]
     },
     {
       "parameters": {
