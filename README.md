@@ -28,8 +28,5 @@ Este proyecto implementa dos sistemas de IA utilizando n8n como orquestador:
 - `tests/`: Pruebas HTTP para validar el funcionamiento.
 - `docs/`: Documentación adicional y capturas.
 
-## 🎥 Demo
-El vídeo de demostración se puede encontrar en: [Enlace al vídeo]
-
-## 📝 Autores
-- Desarrollado por [Nombre] y [Nombre]
+## 📝 Autor
+- Desarrollado por Ángel (AngelDB06)
