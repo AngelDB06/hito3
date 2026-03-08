@@ -40,7 +40,7 @@ services:
       - ai-network
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -48,7 +48,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - hito3_postgres_data:/var/lib/postgresql/data
       - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ai-network
@@ -61,4 +61,4 @@ volumes:
   n8n_data:
   ollama_data:
   qdrant_data:
-  postgres_data:
+  hito3_postgres_data:
