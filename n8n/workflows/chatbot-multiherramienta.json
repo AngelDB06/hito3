@@ -1,0 +1,258 @@
+{
+  "name": "Chatbot Multiherramienta",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatbot",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "prompt": "=Analiza el siguiente mensaje del usuario y clasifícalo en una de estas categorías: 'clima', 'pais', 'wiki', 'chiste', 'general'. Responde SOLO con la palabra de la categoría.\nMensaje: {{$node[\"Webhook\"].json[\"body\"][\"mensaje\"]}}"
+      },
+      "id": "2",
+      "name": "Ollama Analiza Intención",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "value1": "={{$node[\"Ollama Analiza Intención\"].json[\"response\"].trim().toLowerCase()}}",
+              "value2": "clima"
+            },
+            {
+              "value1": "={{$node[\"Ollama Analiza Intención\"].json[\"response\"].trim().toLowerCase()}}",
+              "value2": "pais"
+            },
+            {
+              "value1": "={{$node[\"Ollama Analiza Intención\"].json[\"response\"].trim().toLowerCase()}}",
+              "value2": "wiki"
+            },
+            {
+              "value1": "={{$node[\"Ollama Analiza Intención\"].json[\"response\"].trim().toLowerCase()}}",
+              "value2": "chiste"
+            }
+          ]
+        },
+        "fallbackOutput": 4
+      },
+      "id": "3",
+      "name": "Switch Herramientas",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [400, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current=temperature_2m"
+      },
+      "id": "4",
+      "name": "OpenMeteo (Clima)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, -150]
+    },
+    {
+      "parameters": {
+        "url": "=https://restcountries.com/v3.1/name/{{$node[\"Webhook\"].json[\"body\"][\"query\"]}}"
+      },
+      "id": "5",
+      "name": "REST Countries (País)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, -50]
+    },
+    {
+      "parameters": {
+        "url": "=https://es.wikipedia.org/api/rest_v1/page/summary/{{$node[\"Webhook\"].json[\"body\"][\"query\"]}}"
+      },
+      "id": "6",
+      "name": "Wikipedia (Wiki)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 50]
+    },
+    {
+      "parameters": {
+        "url": "https://v2.jokeapi.dev/joke/Programming?lang=es"
+      },
+      "id": "7",
+      "name": "JokeAPI (Chiste)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 150]
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "prompt": "=Genera una respuesta natural para el usuario basada en esta información:\nDatos: {{$json}}\nPregunta: {{$node[\"Webhook\"].json[\"body\"][\"mensaje\"]}}"
+      },
+      "id": "8",
+      "name": "Ollama Respuesta Natural",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 0]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "historial_chatbot",
+        "columns": "mensaje_usuario, intencion, respuesta_bot, herramienta_usada",
+        "values": {
+          "values": [
+            {
+              "column": "mensaje_usuario",
+              "value": "={{$node[\"Webhook\"].json[\"body\"][\"mensaje\"]}}"
+            },
+            {
+              "column": "intencion",
+              "value": "={{$node[\"Ollama Analiza Intención\"].json[\"response\"]}}"
+            },
+            {
+              "column": "respuesta_bot",
+              "value": "={{$node[\"Ollama Respuesta Natural\"].json[\"response\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "9",
+      "name": "PostgreSQL Historial Chatbot",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [1050, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ollama Analiza Intención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Analiza Intención": {
+      "main": [
+        [
+          {
+            "node": "Switch Herramientas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Herramientas": {
+      "main": [
+        [
+          {
+            "node": "OpenMeteo (Clima)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "REST Countries (País)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wikipedia (Wiki)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "JokeAPI (Chiste)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ollama Respuesta Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenMeteo (Clima)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Respuesta Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REST Countries (País)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Respuesta Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia (Wiki)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Respuesta Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JokeAPI (Chiste)": {
+      "main": [
+        [
+          {
+            "node": "Ollama Respuesta Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Respuesta Natural": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Historial Chatbot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
