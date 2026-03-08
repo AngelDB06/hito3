@@ -1,0 +1,125 @@
+{
+  "name": "RAG - Consultas",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "prompt": "={{$node[\"Webhook\"].json[\"body\"][\"pregunta\"]}}"
+      },
+      "id": "2",
+      "name": "Ollama Embedding Pregunta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "collection": "documentos",
+        "vector": "={{$node[\"Ollama Embedding Pregunta\"].json[\"embedding\"]}}",
+        "limit": 3
+      },
+      "id": "3",
+      "name": "Qdrant Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 0]
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "prompt": "=Responde a la siguiente pregunta usando solo el contexto proporcionado.\nPregunta: {{$node[\"Webhook\"].json[\"body\"][\"pregunta\"]}}\nContexto: {{$node[\"Qdrant Search\"].json[\"result\"]}}"
+      },
+      "id": "4",
+      "name": "Ollama Generate Answer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 0]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "consultas_rag",
+        "columns": "pregunta, respuesta, documentos_usados",
+        "values": {
+          "values": [
+            {
+              "column": "pregunta",
+              "value": "={{$node[\"Webhook\"].json[\"body\"][\"pregunta\"]}}"
+            },
+            {
+              "column": "respuesta",
+              "value": "={{$node[\"Ollama Generate Answer\"].json[\"response\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "5",
+      "name": "PostgreSQL Historial",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [800, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ollama Embedding Pregunta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Embedding Pregunta": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Search": {
+      "main": [
+        [
+          {
+            "node": "Ollama Generate Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Generate Answer": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
